@@ -1,4 +1,5 @@
 bin/
-.classpath/
+.classpath
 *.swp
-.project/
+.project
+.settings/
