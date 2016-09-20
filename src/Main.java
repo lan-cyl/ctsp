@@ -9,6 +9,7 @@ import com.b502lab.ctsp.ga.HcGa4Ctsp;
 import com.b502lab.ctsp.ga.SaGa4Ctsp;
 import com.b502lab.ctsp.ito.Ito4Ctsp;
 import com.b502lab.ctsp.Method4Ctsp;
+import com.b502lab.ctsp.aco.Aco4Ctsp;
 import com.b502lab.ctsp.common.ResultWriter;
 
 public class Main {
@@ -73,22 +74,21 @@ public class Main {
 		case "Ito4Ctsp":
 			method = new Ito4Ctsp();
 			break;
-
 		case "Ga4Ctsp":
 			method = new Ga4Ctsp(false, false, false);
 			break;
 		case "GaG4Ctsp":
 			method = new Ga4Ctsp(true, false, false);
 			break;
-
 		case "HcGa4Ctsp":
 			method = new Ga4Ctsp(true, true, false);
 			break;
-
 		case "SaGa4Ctsp":
 			method = new Ga4Ctsp(true, false, true);
 			break;
-
+		case "Aco4Ctsp":
+			method = new Aco4Ctsp();
+			break;
 		default:
 			method = new Ito4Ctsp();
 			break;
