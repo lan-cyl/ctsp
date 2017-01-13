@@ -1,217 +1,306 @@
 package com.b502lab.ctsp.ga;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.LinkedList;
+import com.b502lab.ctsp.common.Method4Ctsp;
+import com.b502lab.tsp.ga.ImproveGA;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import com.b502lab.ctsp.Method4Ctsp;
-import com.b502lab.ctsp.common.Problem;
+import static com.b502lab.ctsp.common.Ctsp.me;
+import static com.b502lab.tsp.common.Constant.*;
 
 /**
- * 带模拟退火的伊藤算法求解ctsp
- * 
- * @author yonglecai
- *
+ * Created by lan_cyl on 2017/1/6.
  */
-public class Ga4Ctsp implements Method4Ctsp {
-	/* GA 算法的参数 */
-	private static final double uniformRate = 0.5; // 交叉概率
-	private static final double mutationRate = 0.015; // 突变概率
-	private static final int tournamentSize = 5; // 淘汰数组的大小
-	private static final boolean elitism = true; // 精英主义
+public class GA4Ctsp extends ImproveGA implements Method4Ctsp {
 
-	/*-----种群的参数信息-----*/
-	/** 群体中的微粒数 */
-	private final int M = 50;
-	/** 最大迭代次数 */
-	private final int GEN = 20000;
-	/** 算法的连续未更新迭代次数 */
-	private int noUpdateTime;
-	private int noUpdateTime2;
-	/** 当前进化代数 */
-	public int curGen = 1;
+    protected List<Integer>[] salesmanChromosome;// 种群中每个个体的旅行商排列
+    private List<Integer>[] old_salesmanChromosome;
+    protected List<Integer> bestSalesmanChromosome;
 
-	/** 问题实例的全局变量定义 */
-	public Problem problem;
-	/** 双端染色体群 */
-	private Individual particles[];
-	/** 当代双端染色体群中最好解 */
-	private Individual bestParticle;
-	/** 全局最好解 */
-	private Individual allBestParticle;
+    public GA4Ctsp(int n, int[][] dis) {
+        super(n, dis);
+    }
 
-	private boolean useGreedy = false;
-	private boolean useHc = false;
-	private boolean useSa = false;
+    protected void init() {
+        super.init();
+        salesmanChromosome = new ArrayList[population.length];
+        old_salesmanChromosome = new ArrayList[population.length];
+        for (int i = 0; i < population.length; i++) {
+            salesmanChromosome[i] = randomIndivialSalesmen(population[i]);
+        }
+        setBestValue();
+    }
 
-	public Ga4Ctsp(boolean useGreedy, boolean useHc, boolean useSa) {
-		this.useGreedy = useGreedy;
-		this.useHc = useHc;
-		this.useSa = useSa;
-	}
+    @Override
+    protected void selection() {
+        for (int i = 0; i < population.length; i++) {
+            old_population[i] = cloneList(population[i]);
+            old_salesmanChromosome[i] = cloneList(salesmanChromosome[i]);
+            old_values[i] = values[i];
+        }
+        // elite selection
+//        eliteSelection();
 
-	/**
-	 * 初始化
-	 */
-	private void init(File inputFile) {
+        // roulette wheel and elite selection
+        rouletteAndElitSelection();
+    }
 
-		problem = new Problem(inputFile);// 读取测试算例文件
+    void eliteSelection() {
+        int[] old_sortedIndex = sort(old_values);
+        int[] sortedIndex = sort(values);
 
-		particles = new Individual[M];// 初始化各微粒
-		for (int i = 0; i < M; i++) {
-			particles[i] = new Individual(problem.CITY_COUNT - 1, problem, useGreedy);
-		}
+        merge(old_sortedIndex, sortedIndex);
+    }
 
-		bestParticle = new Individual(problem.CITY_COUNT - 1, problem);// 当代粒子群中最好解
+    void merge(int[] old_sortedIndex, int[] sortedIndex) {
 
-		allBestParticle = new Individual(problem.CITY_COUNT - 1, problem);// 目前最优解
-	}
+        List[] new_population = new List[POPULATION_SIZE];
+        List[] new_salesmanChrom = new List[POPULATION_SIZE];
+        int elitenum = 3;
 
-	/**
-	 * 找到当代的最好解，放置到0位置
-	 */
-	private void findTheBest() {
-		int minIndex = 0;
-		for (int i = 1; i < particles.length; i++) {
-			if (particles[i].fitness < particles[minIndex].fitness)
-				minIndex = i;
-		}
-		// particles[minIndex].swap(particles[0]);
-		bestParticle = particles[minIndex];
+        new_population[0] = cloneList(best);
+        new_salesmanChrom[0] = cloneList(bestSalesmanChromosome);
 
-		/*-------更新全局最优解-------*/
-		if (allBestParticle.fitness > bestParticle.fitness) {
-			allBestParticle = bestParticle.clone();
-			noUpdateTime = 0;
-			noUpdateTime2 = 0;
-		} else {
-			noUpdateTime++;
-			noUpdateTime2++;
-			if (noUpdateTime >= 20) {
-				// initDistance();
-				noUpdateTime = 0;
-			} else if (noUpdateTime2 >= 60) {
-				// curGen = GEN;
-			}
-		}
-	}
+        new_population[1] = doMutate(cloneList(best));
+        new_salesmanChrom[1] = cloneList(bestSalesmanChromosome);
+        correctSalesman(new_population[1], new_salesmanChrom[1]);
 
-	// Selects candidate tour for crossover
-	private Individual tournamentSelection() {
-		// Get the fittest tour
-		Individual fittest = new Individual();
-		// For each place in the tournament get a random candidate tour and
-		// add it
-		for (int i = 0; i < tournamentSize; i++) {
-			int randomId = (int) (Math.random() * M);
-			if (fittest.fitness > particles[randomId].fitness) {
-				fittest = particles[randomId].clone();
-			}
-		}
-		return fittest;
-	}
+        new_population[2] = pushMutate(cloneList(best));
+        new_salesmanChrom[2] = cloneList(bestSalesmanChromosome);
+        correctSalesman(new_population[2], new_salesmanChrom[2]);
 
-	private Individual selection(Individual parent1) {
-		double sum = 0;
-		double[] fitness = new double[particles.length];
-		for (int i = 0; i < particles.length; i++) {
-			sum += particles[i].fitness;
-		}
-		for (int i = 0; i < fitness.length; i++) {
-			fitness[i] = particles[i].fitness / sum;
-		}
+        for (int i = 0, j = 0, k = elitenum; k < POPULATION_SIZE; k++) {
+            if (k > 0) {
+                while (i < old_sortedIndex.length && isSameList(old_population[old_sortedIndex[j]], new_population[k - 1]))
+                    i++;
+                while (j < sortedIndex.length && isSameList(population[sortedIndex[j]], new_population[k - 1])) j++;
+            }
+            if (i >= old_sortedIndex.length && j >= sortedIndex.length) {
+                new_population[k] = doMutate(cloneList(best));
+                new_salesmanChrom[k] = cloneList(bestSalesmanChromosome);
+                correctSalesman(new_population[k], new_salesmanChrom[k]);
+            } else if (j >= sortedIndex.length || i < old_sortedIndex.length && old_values[old_sortedIndex[i]] < values[sortedIndex[j]]) {
+                new_population[k] = old_population[old_sortedIndex[i]];
+                new_salesmanChrom[k] = old_salesmanChromosome[old_sortedIndex[i]];
+                correctSalesman(new_population[k], new_salesmanChrom[k]);
+                i++;
+            } else {
+                new_population[k] = population[sortedIndex[j]];
+                new_salesmanChrom[k] = salesmanChromosome[sortedIndex[j]];
+                correctSalesman(new_population[k], new_salesmanChrom[k]);
+                j++;
+            }
+        }
+        population = new_population;
+        salesmanChromosome = new_salesmanChrom;
+    }
 
-		double rand = Math.random();
-		sum = 0;
-		for (int i = 0; i < fitness.length; i++) {
-			sum += fitness[i];
-			if (sum > rand)
-				// if (particles[i].equals(parent1))
-				// return particles[(i + 1) % fitness.length].clone();
-				// else
-				return particles[i].clone();
-		}
-		return allBestParticle.clone();
-	}
+    void rouletteAndElitSelection() {
+        // copy all individual
+        List<Integer>[] new_population = new List[POPULATION_SIZE * 2];
+        List<Integer>[] new_salesmanChrom = new List[POPULATION_SIZE * 2];
+        int[] new_values = new int[POPULATION_SIZE * 2];
 
-	// 进化种群
-	private void evolvePopulation() {
-		Individual[] newPopulation = new Individual[M];// 初始化各微粒
-		for (int i = 0; i < M; i++) {
-			newPopulation[i] = new Individual(problem.CITY_COUNT - 1, problem);
-		}
+        for (int i = 0; i < population.length; i++) {
+            new_population[i] = population[i];
+            new_population[population.length + i] = old_population[i];
+            new_salesmanChrom[i] = salesmanChromosome[i];
+            new_salesmanChrom[population.length + i] = old_salesmanChromosome[i];
+            new_values[i] = values[i];
+            new_values[population.length + i] = old_values[i];
+        }
+        population = new_population;
+        salesmanChromosome = new_salesmanChrom;
+        values = new_values;
+        fitnessValues = new double[values.length];
+        roulette = new double[values.length];
 
-		// 第一个位置 保持最优个体
-		int elitismOffset = 0;
-		if (elitism) {
-			newPopulation[0] = bestParticle.clone();
-			elitismOffset = 1;
+        // roulette wheel select
+        new_population = new List[POPULATION_SIZE];
+        new_salesmanChrom = new List[POPULATION_SIZE];
+        int elitenum = 3;
 
-		}
+        new_population[0] = cloneList(best);
+        new_salesmanChrom[0] = cloneList(bestSalesmanChromosome);
 
-		// 种群交叉操作
-		// 从当前的种群pop 来 创建下一代种群 newPopulation
-		for (int i = elitismOffset; i < newPopulation.length; i++) {
-			// 选择较优的parent
-			Individual child1 = selection(bestParticle);
-			Individual child2 = selection(child1);
-			// 交叉 parents
-			if (!child1.equals(child2))
-				child1.crossOver(problem, child2);
-			// 将产生的child放入到 新种群 newPopulation
-			newPopulation[i] = child1;
-		}
+        new_population[1] = doMutate(cloneList(best));
+        new_salesmanChrom[1] = cloneList(bestSalesmanChromosome);
+        correctSalesman(new_population[1], new_salesmanChrom[1]);
 
-		// 进行突变操作，给基因来点good luck
-		for (int i = elitismOffset; i < newPopulation.length; i++) {
-			newPopulation[i].mutation(problem);
-		}
-		particles = newPopulation;
-	}
+        new_population[2] = pushMutate(cloneList(best));
+        new_salesmanChrom[2] = cloneList(bestSalesmanChromosome);
+        correctSalesman(new_population[2], new_salesmanChrom[2]);
 
-	@Override
-	public void execute(File inputFile) {
-		init(inputFile);
-		System.out.println("executing it, please wait a moment.....");
-		for (curGen = 1; curGen <= GEN; curGen++) {
-			/*------找到本轮迭代的最优解和全局最优解------*/
-			findTheBest();
+        setRoulette();
+        for (int i = elitenum; i < POPULATION_SIZE; i++) {
+            int k = wheelOut(RANDOM_GEN.nextDouble());
+            new_population[i] = cloneList(population[k]);
+            new_salesmanChrom[i] = cloneList(salesmanChromosome[k]);
+        }
 
-			if (useHc)
-				bestParticle.hillClambing(problem);
-			if (useSa)
-				bestParticle.simulatedAnnealing(problem);
+        population = new_population;
+        salesmanChromosome = new_salesmanChrom;
+    }
 
-			evolvePopulation();
-		}
-		System.out.println("execute complete!!!");
-		System.out.println("最优解=" + allBestParticle.fitness + "\n");
-	}
+    @Override
+    protected void doCrossover(int x, int y) {
+        int m, n, len = me.n - 1;
+        do {
+            m = RANDOM_GEN.nextInt(len >> 1);
+            n = RANDOM_GEN.nextInt(len);
+        } while (m >= n);
 
-	@Override
-	public double getBestFitness() {
-		return allBestParticle.fitness;
-	}
+        int[] x2y = new int[len + 1];
+        int[] y2x = new int[len + 1];
+        for (int i = m; i <= n; i++) {
+            int a = population[x].get(i);
+            int b = population[y].get(i);
+            x2y[a] = b;
+            y2x[b] = a;
+            population[x].set(i, b);
+            population[y].set(i, a);
+//            int t = salesmanChromosome[x].get(i);
+//            salesmanChromosome[x].set(i, salesmanChromosome[y].get(i));
+//            salesmanChromosome[y].set(i, t);
+        }
+        for (int i = 0; i < len; i++) {
+            // correct the duplicate city
+            if (i < m || i > n)
+                for (int j = m; j <= n; j++) {
+                    if (population[x].get(i) == population[x].get(j)) {
+                        int a = population[x].get(i);
+                        while (y2x[a] != 0) a = y2x[a];
+                        population[x].set(i, a);
+                    }
+                    if (population[y].get(i) == population[y].get(j)) {
+                        int a = population[y].get(i);
+                        while (x2y[a] != 0) a = x2y[a];
+                        population[y].set(i, a);
+                    }
+                }
+        }
 
-	@Override
-	public List<Integer> getBestTour() {
-		List<Integer> list = new LinkedList<>();
+        correctSalesman(population[x], salesmanChromosome[x]);
+        correctSalesman(population[y], salesmanChromosome[y]);
+    }
 
-		list.add(problem.DEPORT);
-		for (int i = 1; i <= problem.SALESMAN_COUNT; i++) {
-			for (int j = 0; j < allBestParticle.salesmanChromo.length; j++) {
-				if (allBestParticle.salesmanChromo[j] == i) {
-					list.add(allBestParticle.cityChromo[j]);
-				}
-			}
-			list.add(problem.DEPORT);
-		}
-		return list;
-	}
+    // correct the corresponding salesman
+    private void correctSalesman(List<Integer> individual, List salesman) {
+        for (int i = 0; i < me.n - 1; i++) {
+            // correct the corresponding salesman
+            int colora = me.colors[individual.get(i)];
+            if (colora != 0)
+                salesman.set(i, colora);
+        }
+    }
 
-	@Override
-	public Problem getProblem() {
-		return problem;
-	}
+    @Override
+    protected void doMutate(int i) {
+        int m = RANDOM_GEN.nextInt(population[i].size());
+        int n = RANDOM_GEN.nextInt(population[i].size());
+        Collections.swap(population[i], m, n);
+        Collections.swap(salesmanChromosome[i], m, m);
+    }
+
+    // 随机生成初始解
+    protected List randomIndivial() {
+        List<Integer> a = new ArrayList();
+        for (int i = 1; i < n; i++) {
+            a.add(i);
+        }
+        Collections.shuffle(a);
+
+        return a;
+    }
+
+    // 生成对应解的旅行商排列
+    private List randomIndivialSalesmen(List<Integer> a) {
+        List<Integer> b = new ArrayList<>();
+        for (int i = 0; i < a.size(); i++) {
+            int color = me.colors[a.get(i)];
+            if (color == 0) {
+                b.add(RANDOM_GEN.nextInt(me.salesmen_count) + 1);
+            } else {
+                b.add(color);
+            }
+        }
+        return b;
+    }
+
+    @Override
+    protected void setBestValue() {
+        if (salesmanChromosome == null)
+            return;
+        super.setBestValue();
+        if (bestValue == values[currentBestPosition]) {
+            bestSalesmanChromosome = cloneList(salesmanChromosome[currentBestPosition]);
+//            System.out.println(bestValue + ":" + bestSalesmanChromosome);
+        }
+    }
+
+    int evaluate(List<Integer> indivial, List<Integer> salesman) {
+        int sum = 0;
+        for (int i = 1; i <= me.salesmen_count; i++) {
+            int pre = 0;
+            for (int j = 0; j < indivial.size(); j++) {
+                if (salesman.get(j) == i) {
+                    sum += dis[pre][indivial.get(j)];
+                    pre = indivial.get(j);
+                }
+            }
+            sum += dis[pre][0];
+        }
+        return sum;
+    }
+
+    @Override
+    protected int evaluate(int a) {
+        List<Integer> indivial = population[a];
+        List<Integer> salesman = salesmanChromosome[a];
+        return evaluate(indivial, salesman);
+    }
+
+    private boolean isSameList(List<Integer> a, List<Integer> b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            if (a.get(i) != b.get(i))
+                return false;
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        me.init(ALL_CTSP_PATH + "eil51-4.ctsp");
+        GA4Ctsp GA = new GA4Ctsp(me.n, me.distance);
+        GA.start();
+    }
+
+    @Override
+    public void execute() {
+        start();
+    }
+
+    @Override
+    public double getBestValue() {
+        return bestValue;
+    }
+
+    @Override
+    public List<Integer> getBestTour() {
+        List<Integer> tour = new ArrayList<>();
+        tour.add(0);
+        for (int color = 1; color <= me.salesmen_count; color++) {
+            for (int i = 0; i < bestSalesmanChromosome.size(); i++) {
+                if (bestSalesmanChromosome.get(i) == color) {
+                    tour.add(best.get(i));
+                }
+            }
+            tour.add(0);
+        }
+        return tour;
+    }
 }
