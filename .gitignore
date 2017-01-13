@@ -7,3 +7,4 @@ out/
 .idea/
 ALL_ctsp/result/
 ALL_tsp/result/
+*.iml
