@@ -3,3 +3,7 @@ bin/
 *.swp
 .project
 .settings/
+out/
+.idea/
+ALL_ctsp/result/
+ALL_tsp/result/
