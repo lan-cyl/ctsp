@@ -264,29 +264,4 @@ public class beeColony4Tsp extends beeColony {
         }
         return value;
     }
-
-    public static void main(String[] args) {
-        Tsp.me.init("ALL_tsp/eil51.tsp");
-
-        beeColony4Tsp bee = new beeColony4Tsp();
-
-        double mean = 0;
-        //srand(time(NULL));
-        for (int run = 0; run < bee.runtime; run++) {
-            System.out.println("\n" + run + " time running...");
-
-            bee.execute();
-
-            //System.out.println("GlobalParam[%d]: %f\n",j+1,GlobalParams[j]);
-            System.out.println("GlobalMin:" + bee.GlobalMin);
-            System.out.println("GlobalParam:" + Arrays.toString(bee.GlobalParams));
-            bee.GlobalMins[run] = bee.GlobalMin;
-            mean = mean + bee.GlobalMin;
-        }
-        mean = mean / bee.runtime;
-        //System.out.println("Means of %d runs: %e\n",runtime,mean);
-        System.out.println("Means  of " + bee.runtime + "runs: " + mean);
-
-    }
-
 }

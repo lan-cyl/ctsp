@@ -11,8 +11,7 @@ import static com.b502lab.tsp.common.Constant.*;
  */
 public class SimpleGA {
 
-    private int UNCHANGED_GENS = 0;
-    private int currentGeneration = 0;
+    protected boolean bestUnchanged;// 最优解是否更新
     protected int mutationTimes = 0;
 
     protected int[] values;// 长度
@@ -42,13 +41,6 @@ public class SimpleGA {
             population[i] = randomIndivial();
         }
         setBestValue();
-    }
-
-    public void start() {
-        init();
-        while (currentGeneration++ < 25000) {
-            nextEpoch();
-        }
     }
 
     protected void nextEpoch() {
@@ -166,9 +158,9 @@ public class SimpleGA {
         if (bestValue > currentBestValue) {
             best = cloneList(population[currentBestPosition]);
             bestValue = currentBestValue;
-            UNCHANGED_GENS = 0;
+            bestUnchanged = false;
         } else {
-            UNCHANGED_GENS += 1;
+            bestUnchanged = true;
         }
     }
 

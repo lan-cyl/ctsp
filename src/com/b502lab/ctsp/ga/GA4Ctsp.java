@@ -23,7 +23,7 @@ public class GA4Ctsp extends ImproveGA implements Base {
         super(n, dis);
     }
 
-    protected void init() {
+    public void init() {
         super.init();
         salesmanChromosome = new ArrayList[population.length];
         old_salesmanChromosome = new ArrayList[population.length];
@@ -31,6 +31,11 @@ public class GA4Ctsp extends ImproveGA implements Base {
             salesmanChromosome[i] = randomIndivialSalesmen(population[i]);
         }
         setBestValue();
+    }
+
+    @Override
+    public void nextEpoch() {
+        super.nextEpoch();
     }
 
     @Override
@@ -273,15 +278,9 @@ public class GA4Ctsp extends ImproveGA implements Base {
         return true;
     }
 
-    public static void main(String[] args) {
-        me.init(ALL_CTSP_PATH + "eil51-4.ctsp");
-        GA4Ctsp GA = new GA4Ctsp(me.n, me.distance);
-        GA.start();
-    }
-
     @Override
-    public void execute() {
-        start();
+    public boolean bestUnchanged() {
+        return bestUnchanged;
     }
 
     @Override

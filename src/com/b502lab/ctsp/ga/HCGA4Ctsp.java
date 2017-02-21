@@ -18,7 +18,7 @@ public class HCGA4Ctsp extends GAG4Ctsp {
     }
 
     @Override
-    protected void nextEpoch() {
+    public void nextEpoch() {
         super.nextEpoch();
         localSearch();
     }
@@ -114,9 +114,4 @@ public class HCGA4Ctsp extends GAG4Ctsp {
         return index;
     }
 
-    public static void main(String[] args) {
-        me.init(ALL_CTSP_PATH + "eil51-4.ctsp");
-        HCGA4Ctsp GAG = new HCGA4Ctsp(me.n, me.distance);
-        GAG.start();
-    }
 }

@@ -11,7 +11,7 @@ public class test {
         double mean = 0;
         //srand(time(NULL));
         for (run = 0; run < bee.runtime; run++) {
-            bee.initial();
+            bee.init();
             bee.MemorizeBestSource();
             for (iter = 0; iter < bee.maxCycle; iter++) {
                 bee.SendEmployedBees();

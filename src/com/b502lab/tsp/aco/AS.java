@@ -11,6 +11,8 @@ import static com.b502lab.tsp.common.Constant.*;
 
 public class AS implements Base {
 
+    private boolean bestUnchanged;// 最优解是否更新
+
     protected List<Integer>[] m_nAnts;// 蚁群
     protected int[] values;
     protected int m_nIterCounter = 0;// 当前代数
@@ -31,10 +33,15 @@ public class AS implements Base {
         m_nNodes = n;
         m_distance = distance;
 
+    }
+
+    @Override
+    public void init() {
+
         m_nAnts = new List[nAnts];
         values = new int[nAnts];
-        m_tau = new double[n][n];
-        total = new double[n][n];
+        m_tau = new double[m_nNodes][m_nNodes];
+        total = new double[m_nNodes][m_nNodes];
         so_far_best_value = Integer.MAX_VALUE;
         iter_best_value = Integer.MAX_VALUE;
 
@@ -174,40 +181,43 @@ public class AS implements Base {
     }
 
     @Override
-    public void execute() {
+    public void nextEpoch() {
 
-        // loop for all iterations
-        while (m_nIterCounter++ < nASIterations) {
+        // construct new path
+        for (int i = 0; i < m_nAnts.length; i++) {
+            m_nAnts[i] = constructSolution();
+            values[i] = computePathValue(m_nAnts[i]);
+        }
 
-            // construct new path
-            for (int i = 0; i < m_nAnts.length; i++) {
-                m_nAnts[i] = constructSolution();
-                values[i] = computePathValue(m_nAnts[i]);
-            }
+        // record the iter_best
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] < iter_best_value) {
+                iter_best_value = values[i];
+                iter_best = cloneList(m_nAnts[i]);
 
-            // record the iter_best
-            for (int i = 0; i < values.length; i++) {
-                if (values[i] < iter_best_value) {
-                    iter_best_value = values[i];
-                    iter_best = cloneList(m_nAnts[i]);
-
-                    s_nLastBestPathIteration = m_nIterCounter;
+                s_nLastBestPathIteration = m_nIterCounter;
 //                    m_outs1.println("Ant " + ant.antID + "," + ant.pathValue + "," + m_nIterCounter + "," + ant.pathVect);
-                }
             }
+        }
 
-            // update the so_far_best
-            if (iter_best_value < so_far_best_value) {
-                so_far_best_value = iter_best_value;
-                so_far_best = cloneList(iter_best);
-            }
+        // update the so_far_best
+        bestUnchanged = true;
+        if (iter_best_value < so_far_best_value) {
+            so_far_best_value = iter_best_value;
+            so_far_best = cloneList(iter_best);
+            bestUnchanged = false;
+        }
 
-            // record each iter result
+        // record each iter result
 //            m_outs2.println(m_nIterCounter + ";" + so_far_best.pathValue + ";" + m_graph.averageTau());
 
-            // apply global updating rule
-            globalUpdatingRule();
-        }
+        // apply global updating rule
+        globalUpdatingRule();
+    }
+
+    @Override
+    public boolean bestUnchanged() {
+        return bestUnchanged;
     }
 
     @Override
@@ -219,4 +229,5 @@ public class AS implements Base {
     public List<Integer> getBestTour() {
         return so_far_best;
     }
+
 }

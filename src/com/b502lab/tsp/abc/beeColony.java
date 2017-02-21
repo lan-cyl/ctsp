@@ -6,8 +6,9 @@ import java.lang.Math;
 import java.util.Arrays;
 import java.util.List;
 
-public class beeColony implements Base{
+public class beeColony implements Base {
 
+    protected boolean bestUnchanged;
 
     /* Control Parameters of ABC algorithm*/
     int NP = 20; /* The number of colony size (employed bees+onlooker bees)*/
@@ -79,11 +80,13 @@ public class beeColony implements Base{
     protected void MemorizeBestSource() {
         int i, j;
 
+        bestUnchanged = true;
         for (i = 0; i < FoodNumber; i++) {
             if (f[i] < GlobalMin) {
                 GlobalMin = f[i];
                 for (j = 0; j < D; j++)
                     GlobalParams[j] = Foods[i][j];
+                bestUnchanged = false;
             }
         }
     }
@@ -106,7 +109,7 @@ public class beeColony implements Base{
 
 
     /*All food sources are initialized */
-    public void initial() {
+    public void init() {
         iter = 0;
         int i;
         for (i = 0; i < FoodNumber; i++) {
@@ -116,14 +119,14 @@ public class beeColony implements Base{
         for (i = 0; i < D; i++)
             GlobalParams[i] = Foods[0][i];
 
-
+        MemorizeBestSource();
     }
 
     protected void SendEmployedBees() {
         int i, j;
       /*Employed Bee Phase*/
         for (i = 0; i < FoodNumber; i++) {
-	        /*The parameter to be changed is determined randomly*/
+            /*The parameter to be changed is determined randomly*/
             r = ((double) Math.random() * 32767 / ((double) (32767) + (double) (1)));
             param2change = (int) (r * D);
 	        
@@ -272,16 +275,17 @@ public class beeColony implements Base{
     }
 
     @Override
-    public void execute() {
-        initial();
+    public void nextEpoch() {
+        SendEmployedBees();
+        CalculateProbabilities();
+        SendOnlookerBees();
         MemorizeBestSource();
-        for (iter = 0; iter < maxCycle; iter++) {
-            SendEmployedBees();
-            CalculateProbabilities();
-            SendOnlookerBees();
-            MemorizeBestSource();
-            SendScoutBees();
-        }
+        SendScoutBees();
+    }
+
+    @Override
+    public boolean bestUnchanged() {
+        return bestUnchanged;
     }
 
     @Override

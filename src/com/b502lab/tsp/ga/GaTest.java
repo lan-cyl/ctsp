@@ -54,10 +54,19 @@ public class GaTest {
 
         for (int i = 0; i < nRepetitions; i++) {
             ImproveGA GA = selectMethod(methodName);
-            GA.start();
+            start(GA);
             System.out.println(i + "," + GA.bestValue + "," + GA.best);
         }
     }
+
+    public static void start(ImproveGA GA) {
+        GA.init();
+        int currentGeneration = 0;
+        while (currentGeneration++ < 25000) {
+            GA.nextEpoch();
+        }
+    }
+
 
     protected static ImproveGA selectMethod(String methodName) {
         switch (methodName) {

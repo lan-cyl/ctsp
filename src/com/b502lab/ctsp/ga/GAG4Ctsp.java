@@ -14,7 +14,7 @@ public class GAG4Ctsp extends GA4Ctsp {
         super(n, dis);
     }
 
-    protected void init() {
+    public void init() {
         super.init();
         greedy();
         setBestValue();
@@ -40,9 +40,4 @@ public class GAG4Ctsp extends GA4Ctsp {
         }
     }
 
-    public static void main(String[] args) {
-        me.init(ALL_CTSP_PATH + "eil51-4.ctsp");
-        GAG4Ctsp GAG = new GAG4Ctsp(me.n, me.distance);
-        GAG.start();
-    }
 }

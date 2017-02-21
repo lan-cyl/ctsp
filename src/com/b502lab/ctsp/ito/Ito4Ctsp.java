@@ -17,8 +17,7 @@ public class Ito4Ctsp implements Base {
 
     private double T;// 环境温度
 
-    private int noUpdateTime;// 算法的连续未更新迭代次数
-    private int noUpdateTime2;
+    private boolean bestUnchanged;// 最优解是否更新
     private double[][] weight;// 信息素浓度
     private int curGen = 1;// 当前进化代数
 
@@ -29,7 +28,7 @@ public class Ito4Ctsp implements Base {
     /**
      * 初始化
      */
-    private void init() {
+    public void init() {
         T = T0;// 初始化环境温度
         bestParticle = new Ito4CtspParticle();// 当代粒子群中最好解
         allBestParticle = new Ito4CtspParticle();// 目前最优解
@@ -182,43 +181,39 @@ public class Ito4Ctsp implements Base {
 		/*-------更新全局最优解-------*/
         if (allBestParticle.fitness > bestParticle.fitness) {
             bestParticle.copyTo(allBestParticle);
-            noUpdateTime = 0;
-            noUpdateTime2 = 0;
+            bestUnchanged = false;
         } else {
-            noUpdateTime++;
-            noUpdateTime2++;
-            if (noUpdateTime >= 20) {
-                initWeight();
-                noUpdateTime = 0;
-            } else if (noUpdateTime2 >= 60) {
-                curGen = GEN;
-            }
+            bestUnchanged = true;
         }
     }
 
     @Override
-    public void execute() {
-        init();
-        // LinkedList<Double> bestlist = new LinkedList<>();
-        int count = 0;
-        for (curGen = 1; curGen <= GEN; curGen++) {
-            count++;
+    public void nextEpoch() {
             /*-------更新所有粒子的路径-------*/
-            updateAllPath();
-            // climping(); // 采用爬山法作为局部波动,更新种群
+        updateAllPath();
+        // climping(); // 采用爬山法作为局部波动,更新种群
             /*-----对粒子群进行排序，按距离从大到小-------*/
-            Arrays.sort(particles);
+        Arrays.sort(particles);
             /*------找到本轮迭代的最优解和全局最优解------*/
-            updateBestAndNoUpdateTime();
+        updateBestAndNoUpdateTime();
 
 			/*-------更新各微粒半径-------*/
-            updateAllRadius();// 基于排序的方法
+        updateAllRadius();// 基于排序的方法
             /*-----更新环境温度-------*/
-            updateTemperature();
-			/*------更新运动能力------*/
-            updateAllAlfa();
-            // bestlist.add(allBestParticle.fitness);
-        }
+        updateTemperature();
+            /*------更新运动能力------*/
+        updateAllAlfa();
+        // bestlist.add(allBestParticle.fitness);
+
+//        if (noUpdateTime >= 20) {
+//            initWeight();
+//            noUpdateTime = 0;
+//        }
+    }
+
+    @Override
+    public boolean bestUnchanged() {
+        return bestUnchanged;
     }
 
     @Override

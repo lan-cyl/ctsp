@@ -14,12 +14,14 @@ import com.b502lab.ctsp.draw.CtspResultFrame;
  */
 public class ResultWriter {
     public static void write(String filePath, List<Integer> bestTour, double bestFitness,
-                             double worstFitness, double avgFitness, double avgTime, boolean drawOrNot) {
+                             double worstFitness, double avgFitness, long avgBestEpoch, double avgBestTime, double avgTime, boolean drawOrNot) {
         try (FileWriter out = new FileWriter(filePath)) {
             out.write("\r\n最优解为 ->" + bestFitness);// 保存最优解
             out.write("\r\n最差解为 ->" + worstFitness);
             out.write("\r\n平均解为 ->" + avgFitness);
             out.write("\r\n平均求解时间为 ->" + avgTime);
+            out.write("\r\n平均求得最优解时间为->" + avgBestTime);
+            out.write("\r\n平均求得最优解迭代次数为->" + avgBestEpoch);
             out.write("\r\n\r\n对应的访问路径为 ->\r\n" + bestTour.toString());
 
             double[] x = new double[bestTour.size()];

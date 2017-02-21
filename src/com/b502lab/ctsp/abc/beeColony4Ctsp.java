@@ -111,6 +111,7 @@ public class beeColony4Ctsp extends beeColony {
     protected void MemorizeBestSource() {
         int i, j;
 
+        bestUnchanged = true;
         for (i = 0; i < FoodNumber; i++) {
             if (f[i] < GlobalMin) {
                 GlobalMin = f[i];
@@ -118,6 +119,7 @@ public class beeColony4Ctsp extends beeColony {
                     GlobalParams[j] = Foods[i][j];
                     GlobalSalesman[j] = Salesmans[i][j];
                 }
+                bestUnchanged = false;
             }
         }
     }
@@ -327,31 +329,6 @@ public class beeColony4Ctsp extends beeColony {
         tour.add(0);
 
         return tour;
-    }
-
-    public static void main(String[] args) {
-        me.init("ALL_ctsp/eil51-4.ctsp");
-
-        beeColony4Ctsp bee = new beeColony4Ctsp();
-
-        double mean = 0;
-        //srand(time(NULL));
-        for (int run = 1; run <= bee.runtime; run++) {
-            System.out.println("\n" + run + " time running...");
-            bee.execute();
-
-            //System.out.println("GlobalParam[%d]: %f\n",j+1,GlobalParams[j]);
-            System.out.println("GlobalMin:" + bee.GlobalMin);
-            System.out.println("GlobalParam:" + Arrays.toString(bee.GlobalParams));
-            System.out.println("GlobalSalesman:" + Arrays.toString(bee.GlobalSalesman));
-
-            bee.GlobalMins[run - 1] = bee.GlobalMin;
-            mean = mean + bee.GlobalMin;
-        }
-        mean = mean / bee.runtime;
-        //System.out.println("Means of %d runs: %e\n",runtime,mean);
-        System.out.println("Means  of " + bee.runtime + "runs: " + mean);
-
     }
 
 }

@@ -50,11 +50,4 @@ public class SAGA4Ctsp extends HCGA4Ctsp {
         }
         return evaluate(individual, salesman);
     }
-
-    public static void main(String[] args) {
-        me.init(ALL_CTSP_PATH + "eil51-4.ctsp");
-        SAGA4Ctsp GAG = new SAGA4Ctsp(me.n, me.distance);
-        GAG.start();
-        System.out.println(GAG.bestValue + ":" + GAG.best);
-    }
 }
