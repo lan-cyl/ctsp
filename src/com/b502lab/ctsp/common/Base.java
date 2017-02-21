@@ -2,7 +2,7 @@ package com.b502lab.ctsp.common;
 
 import java.util.List;
 
-public interface Method4Ctsp {
+public interface Base {
 	/**
 	 * 算法执行
 	 */

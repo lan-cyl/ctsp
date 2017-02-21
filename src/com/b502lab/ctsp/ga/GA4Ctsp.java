@@ -1,6 +1,6 @@
 package com.b502lab.ctsp.ga;
 
-import com.b502lab.ctsp.common.Method4Ctsp;
+import com.b502lab.ctsp.common.Base;
 import com.b502lab.tsp.ga.ImproveGA;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import static com.b502lab.tsp.common.Constant.*;
 /**
  * Created by lan_cyl on 2017/1/6.
  */
-public class GA4Ctsp extends ImproveGA implements Method4Ctsp {
+public class GA4Ctsp extends ImproveGA implements Base {
 
     protected List<Integer>[] salesmanChromosome;// 种群中每个个体的旅行商排列
     private List<Integer>[] old_salesmanChromosome;

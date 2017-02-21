@@ -53,14 +53,14 @@ public class LocalSearch {
                 c1 = random_vector[l];
                 // DEBUG ( assert ( c1 < Tsp.me.n && c1 >= 0); )
                 pos_c1 = pos[c1];
-                s_c1 = tour[pos_c1 + 1];
+                s_c1 = tour[(pos_c1 + 1)% tour.length];
                 radius = Tsp.me.distance[c1][s_c1];
 
 		/* First search for c1's nearest neighbours, use successor of c1 */
                 for (h = 0; h < Tsp.me.nn_ls; h++) {
                     c2 = Tsp.me.nn_list[c1][h]; /* exchange partner, determine its position */
                     if (radius > Tsp.me.distance[c1][c2]) {
-                        s_c2 = tour[pos[c2] + 1];
+                        s_c2 = tour[(pos[c2] + 1)%tour.length];
                         gain = -radius + Tsp.me.distance[c1][c2] + Tsp.me.distance[s_c1][s_c2]
                                 - Tsp.me.distance[c2][s_c2];
                         if (gain < 0) {
@@ -120,7 +120,7 @@ public class LocalSearch {
 
     }
 
-    // reverse part from pos[h2] to pos[h3]
+    // reverse tour between pos[h2] and pos[h3]
     private static void exchange(int[] tour, int[] pos, int h1, int h2, int h3, int h4) {
         int help, i, j, c1, c2;
         /* sure edge <h1,h2> front fo <h3,h4>*/
@@ -536,7 +536,7 @@ public class LocalSearch {
                             } else if (h == 1) {
 
 				/*
-				 * copy part from pos[h6] to pos[h1]
+                 * copy part from pos[h6] to pos[h1]
 				 * direkt kopiert: Teil von pos[h2] to pos[h3], it
 				 * remains the part from pos[h4] to pos[h5]
 				 */

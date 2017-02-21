@@ -1,6 +1,6 @@
 package com.b502lab.tsp.aco;
 
-import com.b502lab.ctsp.common.Method4Ctsp;
+import com.b502lab.ctsp.common.Base;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,7 +9,7 @@ import java.util.Set;
 
 import static com.b502lab.tsp.common.Constant.*;
 
-public class AS implements Method4Ctsp {
+public class AS implements Base {
 
     protected List<Integer>[] m_nAnts;// 蚁群
     protected int[] values;

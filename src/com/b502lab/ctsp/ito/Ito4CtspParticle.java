@@ -65,10 +65,10 @@ public class Ito4CtspParticle extends AS implements Comparable<Ito4CtspParticle>
         int curFit = computePathValue(curTour);
 
         /** 模拟退火算法来选择是否接受新的一代 */
-        if (curFit < fitness || Math.random() < 0.7) {
+//        if (curFit < fitness || Math.random() < 0.7) {
             fitness = curFit;
             tour = curTour;
-        }
+//        }
     }
 
     // compute the length of the path

@@ -1,6 +1,6 @@
 package com.b502lab.ctsp.ito;
 
-import com.b502lab.ctsp.common.Method4Ctsp;
+import com.b502lab.ctsp.common.Base;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +13,7 @@ import static com.b502lab.tsp.common.Constant.*;
  *
  * @author yonglecai
  */
-public class Ito4Ctsp implements Method4Ctsp {
+public class Ito4Ctsp implements Base {
 
     private double T;// 环境温度
 

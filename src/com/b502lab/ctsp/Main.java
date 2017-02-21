@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.b502lab.ctsp.abc.beeColony4Ctsp;
 import com.b502lab.ctsp.aco.AS4Ctsp;
 import com.b502lab.ctsp.aco.ACS4Ctsp;
 import com.b502lab.ctsp.aco.MMAS4Ctsp;
 import com.b502lab.ctsp.ga.*;
-import com.b502lab.ctsp.ito.ITO;
 import com.b502lab.ctsp.ito.Ito4Ctsp;
-import com.b502lab.ctsp.common.Method4Ctsp;
+import com.b502lab.ctsp.common.Base;
 import com.b502lab.ctsp.common.ResultWriter;
 
 import static com.b502lab.ctsp.common.Ctsp.me;
@@ -73,10 +73,10 @@ public class Main {
         execute(methodName, filesList);
     }
 
-    private static Method4Ctsp selectMethod(String methodName) {
-        Method4Ctsp method;
+    private static Base selectMethod(String methodName) {
+        Base method;
         switch (methodName) {
-            case "Ito4Ctsp":
+            case "ITO4Ctsp":
                 method = new Ito4Ctsp();
 //                method = new ITO(me.n, me.distance);
                 break;
@@ -101,6 +101,9 @@ public class Main {
             case "MMAS4Ctsp":
                 method = new MMAS4Ctsp(me.n, me.distance);
                 break;
+            case "ABC4Ctsp":
+                method = new beeColony4Ctsp();
+                break;
             default:
                 method = new Ito4Ctsp();
                 break;
@@ -122,7 +125,7 @@ public class Main {
 			/*------------算法执行count次，求平均值--------------*/
             for (int i = 0; i < count; i++) {
                 System.out.println("\nexecuting it, please wait a moment.....");
-                Method4Ctsp method = selectMethod(methodName);
+                Base method = selectMethod(methodName);
                 method.execute();// 算法执行
                 sumFit += method.getBestValue();
                 if (bestFitness > method.getBestValue()) {// 更新count次算法运行后的最好解
